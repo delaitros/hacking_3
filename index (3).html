@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Introducción al Hacking — QUIZTIMEs</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root{
+      --brand:#06c; --ink:#0b1220; --muted:#586174; --surface:#f5f7fb;
+    }
+    body{
+      font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Inter",system-ui,Segoe UI,Roboto,Helvetica,Arial;
+      color:var(--ink); background:#fff;
+    }
+    /* NAV */
+    .nav-glass{
+      backdrop-filter:saturate(160%) blur(14px);
+      -webkit-backdrop-filter:saturate(160%) blur(14px);
+      background: color-mix(in oklab, white 80%, transparent);
+      border-bottom:1px solid color-mix(in oklab, #d1d5db 40%, transparent);
+    }
+    .btn{
+      display:inline-flex; align-items:center; gap:.6rem;
+      border-radius:999px; padding:.8rem 1.15rem; font-weight:600;
+      border:1px solid color-mix(in oklab, #e5e7eb 70%, #c7d2fe 10%);
+      background: linear-gradient(180deg,#fff,#f7f9ff);
+      box-shadow: 0 1px 0 inset rgba(255,255,255,.9), 0 12px 30px -22px rgba(0,0,0,.6);
+      transition: transform .2s cubic-bezier(.22,1,.36,1), box-shadow .2s;
+    }
+    .btn:hover{ transform: translateY(-1px); box-shadow: 0 1px 0 inset rgba(255,255,255,.9), 0 18px 40px -22px rgba(0,102,204,.35); }
+    .btn-primary{
+      color:#083b88;
+      background: linear-gradient(180deg, color-mix(in oklab, var(--brand) 18%, #fff 82%), #e8f0ff);
+      border-color: color-mix(in oklab, var(--brand) 30%, #c7d2fe 40%);
+    }
+    .chip{
+      display:inline-flex; align-items:center; gap:.5rem; padding:.35rem .7rem;
+      font-size:.875rem; border-radius:999px; border:1px solid #e5e7eb; background:#fff;
+    }
+
+    /* HERO */
+    .hero{
+      background:
+        radial-gradient(1200px 600px at 50% -20%, #eaf2ff 10%, transparent 70%),
+        radial-gradient(900px 500px at 90% 10%, #f5fff7 0, transparent 60%),
+        #fff;
+    }
+    .hero h1{ letter-spacing:-.02em; line-height:1.05; }
+
+    /* CARDS GLASS */
+    .card{
+      background: linear-gradient(180deg, #ffffff, #fafbff);
+      border:1px solid #e9edf7; border-radius:28px;
+      box-shadow: 0 24px 60px -36px rgba(17,24,39,.28);
+      transition: transform .25s cubic-bezier(.22,1,.36,1), box-shadow .25s;
+    }
+    .card:hover{ transform: translateY(-6px); box-shadow: 0 30px 80px -42px rgba(17,24,39,.38); }
+
+    /* QUIZ inputs */
+    .quiz-input{
+      background:#fff; border:1px solid #dbe2f0; border-radius:14px; padding:.85rem 1rem; width:100%;
+      transition:border-color .2s;
+    }
+    .quiz-input:focus{ outline:none; border-color:#94b8ff; box-shadow:0 0 0 3px rgba(100,149,237,.15); }
+    .quiz-btn{ border-radius:14px; padding:.8rem 1rem; font-weight:600; }
+    .quiz-btn-primary{ background:linear-gradient(180deg,#e6f0ff,#dbe8ff); border:1px solid #bcd3ff; color:#0b3d91; }
+    .quiz-btn-secondary{ background:#f3f5fa; border:1px solid #e5e8f0; }
+    .message{ margin-top:.8rem; padding:.9rem 1rem; border-radius:12px; font-weight:600;
+      border:1px solid #e5e8f0; background:#f7fbff; color:#0b3d91;}
+    .message.bad{ background:#fff6f6; color:#b42318; border-color:#ffd6d6; }
+
+    /* Overlays correcto/incorrecto */
+    .overlay{ position:fixed; inset:0; display:flex; align-items:center; justify-content:center;
+      backdrop-filter: blur(10px) saturate(140%); -webkit-backdrop-filter: blur(10px) saturate(140%);
+      opacity:0; pointer-events:none; transition:opacity .45s;}
+    .overlay.show{ opacity:1; pointer-events:auto; }
+    .overlay-ok{ background: rgba(46,224,117,.8); }
+    .overlay-bad{ background: rgba(255,75,75,.82); }
+    .overlay svg{ width:140px; height:140px; filter: drop-shadow(0 10px 24px rgba(0,0,0,.35)); }
+    .overlay path{ stroke-dasharray:400; stroke-dashoffset:400; animation: draw .7s cubic-bezier(.22,1,.36,1) forwards .1s; }
+    @keyframes draw{ to{ stroke-dashoffset:0 } }
+
+    /* REVEAL */
+    .reveal{ opacity:0; transform: translateY(18px); }
+    .reveal.show{ opacity:1; transform: translateY(0); transition: all .7s cubic-bezier(.22,1,.36,1); }
+
+    /* Mascota iOS-like */
+    .helper{
+      position:fixed; right:16px; bottom:16px; z-index:60;
+      display:flex; align-items:center; gap:.6rem; padding:.55rem .7rem .55rem .55rem;
+      border-radius:999px;
+      background: color-mix(in oklab, white 85%, #f2f6ff 15%);
+      border:1px solid #e5e9f5;
+      box-shadow: 0 12px 40px -20px rgba(0,0,0,.35), 0 1px 0 0 rgba(255,255,255,.9) inset;
+      backdrop-filter: blur(12px) saturate(140%); -webkit-backdrop-filter: blur(12px) saturate(140%);
+      cursor:pointer; user-select:none;
+      transition: transform .2s cubic-bezier(.22,1,.36,1), box-shadow .2s;
+    }
+    .helper:hover{ transform: translateY(-2px); box-shadow: 0 18px 50px -24px rgba(0,102,204,.35); }
+    .helper .bubble{
+      width:42px; height:42px; border-radius:999px; display:grid; place-items:center; font-weight:800;
+      background: linear-gradient(180deg, #fdfdff, #eef3ff);
+      border:1px solid #dbe4ff;
+      text-shadow: 0 1px 0 #fff;
+    }
+    .helper .label{ font-weight:600; font-size:.95rem; color:#0b3d91; }
+    .helper .hint{ font-size:.8rem; color:var(--muted); display:none; }
+    @media (min-width: 640px){ .helper .hint{ display:block; } }
+
+    /* Botón música pill */
+    .pill{ border-radius:999px; padding:.55rem .9rem; border:1px solid #e6ebf5; background:#fff; font-weight:600; }
+
+    /* Progress (iOS-ish) */
+    .progress-wrap{ display:flex; align-items:center; gap:.75rem; }
+    .progress-chip{
+      font-weight:700; font-variant-numeric: tabular-nums;
+      padding:.4rem .7rem; border-radius:999px; font-size:.9rem;
+      background:linear-gradient(180deg,#fdfdff,#eef3ff);
+      border:1px solid #dbe4ff; color:#0b3d91;
+      box-shadow:0 1px 0 rgba(255,255,255,.9) inset;
+    }
+    .progress{
+      width:210px; height:12px; border-radius:999px; overflow:hidden;
+      background: color-mix(in oklab, #eaf0ff 70%, #ffffff 30%);
+      border:1px solid #e6ebf5;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.9);
+    }
+    .progress-fill{
+      height:100%; width:0%;
+      background: linear-gradient(180deg, #9ec5ff, #6ea8fe);
+      box-shadow: 0 6px 18px -10px rgba(0,102,204,.45);
+      transition: width .45s cubic-bezier(.22,1,.36,1);
+    }
+
+    @media (prefers-reduced-motion: reduce){ *{animation:none!important;transition:none!important} }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <header class="nav-glass sticky top-0 z-50">
+    <nav class="mx-auto max-w-6xl px-4 py-3 flex items-center justify-between">
+      <a class="flex items-center gap-3">
+        <span class="inline-flex h-6 w-6 rounded-full bg-black"></span>
+        <span class="font-semibold">QuizzTimeS</span>
+      </a>
+      <ul class="hidden md:flex items-center gap-7 text-[15px]">
+        <li><a href="#hero" class="hover:opacity-70">Inicio</a></li>
+        <li><a href="#quiz" class="hover:opacity-70">Quiz</a></li>
+        <li><a href="#features" class="hover:opacity-70">Prestaciones</a></li>
+      </ul>
+      <div class="flex items-center gap-2">
+        <button id="music-toggle" class="pill" aria-pressed="true" aria-label="Alternar música">🔊 Música</button>
+        <a href="#quiz" class="btn btn-primary text-sm">Probar Quiz</a>
+      </div>
+    </nav>
+  </header>
+
+  <!-- HERO -->
+  <section id="hero" class="hero">
+    <div class="mx-auto max-w-6xl px-4 pt-16 pb-20 md:pt-24 md:pb-28">
+      <div class="grid md:grid-cols-2 gap-10 items-center">
+        <div class="reveal">
+          <span class="chip mb-4">Nuevo</span>
+          <h1 class="text-5xl md:text-6xl font-bold tracking-tight">
+            Hacking ético: pensá como atacante, actuá como defensor. 🛡️💡
+          </h1>
+          <p class="mt-5 text-lg text-[var(--muted)] max-w-xl">
+            El hacking ético no es “romper por romper”: es curiosidad con propósito.
+            Vas a reconocer superficies de ataque, explotar <em>vulns</em> en
+            entornos controlados y reportar responsablemente para que los sistemas
+            sean más seguros. 🚀 La meta: que la tecnología sea mejor para todos.
+          </p>
+          <div class="mt-7 flex flex-wrap items-center gap-3">
+            <a href="#quiz" class="btn btn-primary">Ir al Quiz</a>
+            <a href="#features" class="btn">Ver más</a>
+          </div>
+        </div>
+
+        <div class="reveal md:justify-self-end">
+          <figure class="card p-3">
+            <img class="rounded-2xl w-full h-[420px] object-cover"
+                 src="https://images.unsplash.com/photo-1510511459019-5dda7724fd87?q=80&w=1200&auto=format&fit=crop"
+                 alt="Pantallas con código y entorno de ciberseguridad">
+          </figure>
+          <p class="text-center text-sm text-[var(--muted)] mt-3">Demo visual • temática de ciberseguridad</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- QUIZ CARD -->
+  <section id="quiz" class="py-16 bg-[var(--surface)]">
+    <div class="mx-auto max-w-5xl px-4">
+      <div class="card p-6 md:p-10 reveal">
+        <div class="flex items-center justify-between flex-wrap gap-3">
+          <div>
+            <h2 class="text-3xl font-bold tracking-tight">Introducción al hacking ✨</h2>
+            <p class="text-[var(--muted)]">6º año 724 • 1 → 11</p>
+          </div>
+
+          <!-- Progreso -->
+          <div class="progress-wrap">
+            <span id="progress-percent" class="progress-chip">0%</span>
+            <div class="progress" aria-label="Progreso del cuestionario">
+              <div id="progress-fill" class="progress-fill"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-8 mt-8">
+          <div>
+            <label class="block font-semibold mb-2" for="student-name">Tu nombre</label>
+            <input id="student-name" class="quiz-input" placeholder="Escribe tu nombre" />
+            <p class="mt-4 text-sm text-[var(--muted)]">
+              Puntuación: <span id="score-display" class="font-semibold text-black">0</span> puntos
+            </p>
+          </div>
+
+          <div>
+            <p id="question-display" class="text-lg font-semibold mb-3">Cargando preguntas…</p>
+
+            <div id="answer-input-container" class="flex items-center gap-2" style="display:none;">
+              <input id="answer-input" class="quiz-input" placeholder="Escribe tu respuesta…" />
+              <button id="submit-answer-btn" class="btn quiz-btn quiz-btn-primary">Verificar</button>
+            </div>
+
+            <div id="student-message-container"></div>
+
+            <div class="mt-4 flex gap-2">
+              <button id="next-question-btn" class="btn quiz-btn quiz-btn-secondary disabled">Siguiente</button>
+              <button id="hint-btn" class="btn quiz-btn">💡 Pista (WhatsApp)</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section id="features" class="py-16 md:py-24">
+    <div class="mx-auto max-w-6xl px-4">
+      <div class="text-center reveal">
+        <h2 class="text-4xl md:text-5xl font-bold tracking-tight">Fundamentos de hacking ético</h2>
+        <p class="text-[var(--muted)] mt-3">Metodología, práctica segura y comunicación profesional.</p>
+      </div>
+      <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-10">
+        <div class="card p-7 reveal">
+          <h3 class="text-xl font-semibold">Reconocimiento &amp; OSINT 🔎</h3>
+          <p class="text-[var(--muted)] mt-2">Mapeá la superficie de ataque: DNS, puertos, tech stack y huellas públicas.</p>
+        </div>
+        <div class="card p-7 reveal">
+          <h3 class="text-xl font-semibold">Explotación controlada 🧪</h3>
+          <p class="text-[var(--muted)] mt-2">Practicá vulnerabilidades comunes (Inyección, XSS, auth débil) en labs aislados.</p>
+        </div>
+        <div class="card p-7 reveal">
+          <h3 class="text-xl font-semibold">Reporte responsable 📄</h3>
+          <p class="text-[var(--muted)] mt-2">Informes con PoC, impacto (CVSS), mitigaciones y disclosure coordinado.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- OVERLAYS -->
+  <div id="ok-overlay" class="overlay overlay-ok" aria-hidden="true">
+    <svg viewBox="0 0 120 120" fill="none" role="img" aria-label="Respuesta correcta">
+      <circle cx="60" cy="60" r="52" stroke="rgba(255,255,255,.4)" stroke-width="2"/>
+      <path d="M30 63 L52 82 L92 38" stroke="#fff" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </div>
+  <div id="bad-overlay" class="overlay overlay-bad" aria-hidden="true">
+    <svg viewBox="0 0 120 120" fill="none" role="img" aria-label="Respuesta incorrecta">
+      <circle cx="60" cy="60" r="52" stroke="rgba(255,255,255,.4)" stroke-width="2"/>
+      <path d="M36 36 L84 84 M84 36 L36 84" stroke="#fff" stroke-width="10" stroke-linecap="round"/>
+    </svg>
+  </div>
+
+  <!-- Mascota / Ayuda WhatsApp -->
+  <button id="helper" class="helper" aria-label="Ayuda por WhatsApp">
+    <span class="bubble">?</span>
+    <span class="label">Ayuda</span>
+    <span class="hint">Tocá para escribir al profe</span>
+  </button>
+
+  <!-- AUDIO -->
+  <audio id="background-music" loop>
+    <source src="https://www.bensound.com/bensound-music/bensound-jazzyfrenchy.mp3" type="audio/mpeg">
+  </audio>
+  <audio id="correct-sound"><source src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/3/correct.mp3" type="audio/mpeg"></audio>
+  <audio id="incorrect-sound"><source src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/3/incorrect.mp3" type="audio/mpeg"></audio>
+
+  <!-- SCRIPTS -->
+  <script type="module">
+    /* ======= UI simple: reveal on scroll + nav shadow ======= */
+    const header = document.querySelector('header');
+    const onScroll = ()=> header.style.boxShadow = window.scrollY>6 ? '0 8px 30px -30px rgba(0,0,0,.6)' : 'none';
+    onScroll(); addEventListener('scroll', onScroll, {passive:true});
+    const io = new IntersectionObserver(es=>{ for(const e of es){ if(e.isIntersecting){ e.target.classList.add('show'); io.unobserve(e.target);} } }, {threshold:.12});
+    document.querySelectorAll('.reveal').forEach(el=> io.observe(el));
+
+    /* ======= Firebase ======= */
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
+    import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
+    import { getFirestore, collection, addDoc, serverTimestamp, setLogLevel, getDocs } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
+
+    setLogLevel('debug');
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCe6IZxXWbV4oh5omAEQ1q5vOiJ_Zt2k3A",
+      authDomain: "quizz-sexto.firebaseapp.com",
+      projectId: "quizz-sexto",
+      storageBucket: "quizz-sexto.firebasestorage.app",
+      messagingSenderId: "538951385566",
+      appId: "1:538951385566:web:f24284c89cd67b6c4bdd4f",
+      measurementId: "G-PDVXLXYHQ9"
+    };
+
+    const COLLECTION_NAME = 'quiz_questions2'; // o 'quiz_questions'
+
+    let app, db, auth, userId;
+    let questions = [];
+    let currentQuestionIndex = 0;
+    let score = { points: 0, questionsAnswered: 0 };
+    let currentQuestionAttempts = 0;
+
+    // WhatsApp del profe
+    const teacherPhone = '+5492804292040';
+
+    // DOM
+    const studentNameEl = document.getElementById('student-name');
+    const questionDisplay = document.getElementById('question-display');
+    const answerInput = document.getElementById('answer-input');
+    const submitAnswerBtn = document.getElementById('submit-answer-btn');
+    const studentMessageContainer = document.getElementById('student-message-container');
+    const scoreDisplay = document.getElementById('score-display');
+    const nextQuestionBtn = document.getElementById('next-question-btn');
+    const hintBtn = document.getElementById('hint-btn');
+    const bgm = document.getElementById('background-music');
+    const okOverlay = document.getElementById('ok-overlay');
+    const badOverlay = document.getElementById('bad-overlay');
+    const correctSound = document.getElementById('correct-sound');
+    const incorrectSound = document.getElementById('incorrect-sound');
+    const answerInputContainer = document.getElementById('answer-input-container');
+    const musicToggle = document.getElementById('music-toggle');
+    const helperBtn = document.getElementById('helper');
+    const progressPercentEl = document.getElementById('progress-percent');
+    const progressFillEl = document.getElementById('progress-fill');
+
+    // Música: primera interacción
+    document.addEventListener('DOMContentLoaded', () => {
+      document.body.addEventListener('click', () => {
+        if (musicToggle.getAttribute('aria-pressed') === 'true') {
+          bgm.play().catch(()=>{});
+        }
+      }, { once: true });
+    });
+
+    // Botón de música (toggle)
+    function updateMusicUI(){
+      const on = musicToggle.getAttribute('aria-pressed') === 'true';
+      musicToggle.textContent = on ? '🔊 Música' : '🔇 Música';
+    }
+    musicToggle.addEventListener('click', async ()=>{
+      const isOn = musicToggle.getAttribute('aria-pressed') === 'true';
+      if (isOn){ musicToggle.setAttribute('aria-pressed','false'); bgm.pause(); }
+      else { musicToggle.setAttribute('aria-pressed','true'); try{ await bgm.play(); }catch{} }
+      updateMusicUI();
+    });
+    updateMusicUI();
+
+    // Progreso
+    function updateProgress(){
+      const total = questions.length || 1;
+      const completed = Math.min(currentQuestionIndex, total);
+      const pct = Math.round((completed / total) * 100);
+      progressPercentEl.textContent = pct + '%';
+      progressFillEl.style.width = pct + '%';
+    }
+
+    /* ==== Cargar preguntas ordenadas por ID numérico (1..11) ==== */
+    async function fetchQuestions() {
+      try {
+        if (!db) { questionDisplay.textContent = 'Error: Firestore no inicializado.'; return; }
+        const snap = await getDocs(collection(db, COLLECTION_NAME));
+        if (snap.empty) {
+          questionDisplay.textContent = 'No hay preguntas disponibles.'; answerInputContainer.style.display = 'none'; return;
+        }
+        const docs = snap.docs.slice().sort((a,b)=>{
+          const na = Number(a.id), nb = Number(b.id);
+          if (Number.isNaN(na) && Number.isNaN(nb)) return 0;
+          if (Number.isNaN(na)) return 1;
+          if (Number.isNaN(nb)) return -1;
+          return na - nb;
+        });
+        questions = docs.map(d => ({ id:d.id, ...d.data() }));
+        currentQuestionIndex = 0;
+        renderQuestion();
+        answerInputContainer.style.display = 'flex';
+        updateProgress();
+      } catch (err) {
+        console.error('Error al cargar las preguntas:', err);
+        questionDisplay.textContent = 'Error al cargar las preguntas. Revisá la consola.';
+      }
+    }
+
+    function renderQuestion() {
+      if (questions.length === 0) {
+        questionDisplay.textContent = 'No hay preguntas disponibles.';
+        answerInputContainer.style.display = 'none';
+        nextQuestionBtn.classList.add('disabled'); hintBtn.classList.add('disabled'); return;
+      }
+      nextQuestionBtn.classList.add('disabled'); hintBtn.classList.remove('disabled');
+      submitAnswerBtn.classList.remove('disabled');
+      answerInput.value = ''; studentMessageContainer.innerHTML = ''; answerInput.focus();
+      updateProgress();
+
+      const currentQuestion = questions[currentQuestionIndex];
+      if (currentQuestion && currentQuestion.question) {
+        questionDisplay.textContent = currentQuestion.question;
+      } else {
+        questionDisplay.textContent = 'Error: la pregunta no tiene el campo "question".';
+        answerInputContainer.style.display = 'none';
+      }
+    }
+
+    async function saveQuizResult() {
+      try {
+        await addDoc(collection(db, `/artifacts/${firebaseConfig.projectId}/public/data/quiz_results`), {
+          name: studentNameEl.value || 'Anónimo',
+          score_points: score.points,
+          totalQuestions: questions.length,
+          date: serverTimestamp(),
+          userId
+        });
+      } catch (e) { console.error('Error al guardar resultado:', e); }
+    }
+
+    function updateScoreDisplay(){ scoreDisplay.textContent = `${score.points}`; }
+    function showOverlay(el, ms=1200){ el.classList.add('show'); setTimeout(()=> el.classList.remove('show'), ms); }
+
+    function handleAnswer() {
+      const userAnswer = (answerInput.value||'').trim().toLowerCase();
+      const correctAnswer = (questions[currentQuestionIndex].correctAnswer||'').trim().toLowerCase();
+      studentMessageContainer.innerHTML = '';
+
+      if (userAnswer && userAnswer === correctAnswer) {
+        try { correctSound.play(); } catch {}
+        let pts = 1000; for (let i=0; i<currentQuestionAttempts; i++) pts/=2;
+        score.points += Math.max(0, Math.round(pts));
+        score.questionsAnswered++; currentQuestionAttempts = 0; updateScoreDisplay(); showOverlay(okOverlay, 1100);
+        setTimeout(()=>{
+          currentQuestionIndex++;
+          updateProgress();
+          (currentQuestionIndex < questions.length)? renderQuestion() : endQuiz();
+        }, 700);
+      } else {
+        try { incorrectSound.play(); } catch {}
+        currentQuestionAttempts++; updateScoreDisplay(); showOverlay(badOverlay, 900);
+      }
+    }
+
+    function endQuiz(){
+      saveQuizResult();
+      progressPercentEl.textContent = '100%';
+      progressFillEl.style.width = '100%';
+      questionDisplay.textContent = '¡Has completado el quiz! 🎉';
+      answerInputContainer.style.display = 'none';
+      nextQuestionBtn.classList.add('disabled'); hintBtn.classList.add('disabled');
+      const msg = document.createElement('div'); msg.className = 'message';
+      msg.textContent = `Puntuación final: ${score.points} puntos`;
+      studentMessageContainer.innerHTML = ''; studentMessageContainer.appendChild(msg);
+
+      const studentName = studentNameEl.value.trim() || 'Un alumno anónimo';
+      const text = encodeURIComponent(`¡Hola! ${studentName} completó el quiz con ${score.points} puntos.`);
+      window.open(`https://wa.me/${teacherPhone}?text=${text}`, '_blank');
+    }
+
+    // Eventos quiz
+    document.getElementById('submit-answer-btn').addEventListener('click', handleAnswer);
+    document.getElementById('answer-input').addEventListener('keydown', e=>{
+      if(e.key==='Enter'){ e.preventDefault(); handleAnswer(); }
+    });
+    document.getElementById('next-question-btn').addEventListener('click', ()=>{
+      currentQuestionIndex++; updateProgress();
+      (currentQuestionIndex < questions.length)? renderQuestion() : endQuiz();
+    });
+    document.getElementById('hint-btn').addEventListener('click', ()=>{
+      const studentName = studentNameEl.value.trim();
+      if (!studentName) { studentMessageContainer.innerHTML = '<div class="message bad">Ingresá tu nombre para pedir ayuda.</div>'; return; }
+      const q = questions[currentQuestionIndex];
+      const text = encodeURIComponent(`Hola, soy ${studentName} y necesito una pista con esta pregunta: "${q.question}"`);
+      window.open(`https://wa.me/${teacherPhone}?text=${text}`, '_blank');
+      studentMessageContainer.innerHTML = '<div class="message">¡Pista enviada! Revisa tu WhatsApp.</div>';
+    });
+
+    // Mascota -> WhatsApp
+    helperBtn.addEventListener('click', ()=>{
+      const studentName = studentNameEl.value.trim() || 'Un alumno';
+      const q = questions[currentQuestionIndex]?.question || 'una consulta del curso';
+      const text = encodeURIComponent(`Hola profe, soy ${studentName}. Tengo una duda sobre: "${q}"`);
+      window.open(`https://wa.me/${teacherPhone}?text=${text}`, '_blank');
+    });
+
+    // Init Firebase + cargar preguntas
+    (async ()=>{
+      app = initializeApp(firebaseConfig);
+      auth = getAuth(app);
+      db = getFirestore(app);
+      try{
+        const cred = await signInAnonymously(auth);
+        userId = cred.user.uid;
+        await fetchQuestions();
+      }catch(e){
+        console.error('Auth error:', e);
+        questionDisplay.textContent = 'No se pudo autenticar para leer la base.';
+      }
+    })();
+  </script>
+</body>
+</html>
