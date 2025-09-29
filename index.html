@@ -334,19 +334,34 @@
         <p class="text-[var(--muted)] mt-3">Metodología, práctica segura y comunicación profesional.</p>
       </div>
       <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-10">
-        <div class="card p-7 reveal">
-          <h3 class="text-xl font-semibold">Reconocimiento &amp; OSINT 🔎</h3>
-          <p class="text-[var(--muted)] mt-2">Mapeá la superficie de ataque: DNS, puertos, tech stack y huellas públicas.</p>
-        </div>
-        <div class="card p-7 reveal">
-          <h3 class="text-xl font-semibold">Explotación controlada 🧪</h3>
-          <p class="text-[var(--muted)] mt-2">Practicá vulnerabilidades comunes (Inyección, XSS, auth débil) en labs aislados.</p>
-        </div>
-        <div class="card p-7 reveal">
-          <h3 class="text-xl font-semibold">Reporte responsable 📄</h3>
-          <p class="text-[var(--muted)] mt-2">Informes con PoC, impacto (CVSS), mitigaciones y disclosure coordinado.</p>
-        </div>
-      </div>
+  <div class="card p-7">
+    <h3 class="text-xl font-semibold">Metodología 🔬</h3>
+    <ul class="mt-3 list-disc pl-5 text-[var(--muted)] space-y-2">
+      <li>Filtrá por Event IDs (1,3,11,22,5) y correlacioná por tiempo.</li>
+      <li>Analizá <code>Image</code>, <code>ParentImage</code>, <code>CommandLine</code>, <code>Hashes</code>.</li>
+      <li>Construí un timeline de más antiguo a reciente.</li>
+      <li>Confirmá con fuentes externas (hash → VT) sin sustituir la evidencia local.</li>
+    </ul>
+  </div>
+  <div class="card p-7">
+    <h3 class="text-xl font-semibold">Práctica segura 🛡️</h3>
+    <ul class="mt-3 list-disc pl-5 text-[var(--muted)] space-y-2">
+      <li>Detectá <em>timestomping</em> (ID 2) y ADS (ID 15).</li>
+      <li>Monitoreá DNS (ID 22) y red (ID 3) para C2 y nubes.</li>
+      <li>Revisá Registro (ID 12–14) y WMI (ID 19–21) por persistencia.</li>
+      <li>Preservá artefactos; evitá ejecutar binarios sospechosos.</li>
+    </ul>
+  </div>
+  <div class="card p-7">
+    <h3 class="text-xl font-semibold">Comunicación 💬</h3>
+    <ul class="mt-3 list-disc pl-5 text-[var(--muted)] space-y-2">
+      <li>Conectá hallazgos con impacto (p. ej., 22→3→11).</li>
+      <li>Cita campos clave y hashes para trazabilidad.</li>
+      <li>Separá “Hechos / Análisis / Conclusión” con timeline.</li>
+      <li>Incluí contención, erradicación y verificación.</li>
+    </ul>
+  </div>
+</div>
     </div>
   </section>
 
@@ -404,7 +419,7 @@
       measurementId: "G-PDVXLXYHQ9"
     };
 
-    const COLLECTION_NAME = 'quiz_questions2'; // o 'quiz_questions'
+    const COLLECTION_NAME = 'quiz_questions3'; // o 'quiz_questions'
 
     let app, db, auth, userId;
     let questions = [];
